@@ -8,6 +8,9 @@ from flask_debugtoolbar import DebugToolbarExtension
 app = Flask(__name__)
 app.secret_key = "SECRETSECRETSECRET"
 
+eventbrite_token = os.environ["EVENTBRITE_TOKEN"]  # os saves the token from the secrets.sh to a dictionary
+                                                   # called os.environ.
+                                                   # Run the source secrets.sh in the terminal before using.
 
 @app.route("/")
 def homepage():
@@ -40,13 +43,22 @@ def find_afterparties():
         distance = distance + measurement
 
         # TODO: Look for afterparties!
-
+        url = "https://www.eventbriteapi.com/v3/events/search"
+        payload = {
+            "token": eventbrite_token,
+            "q":query,
+            "location.address": location,
+            "location.within" : distance,
+            "sort_by": sort
+        }
         # - Make a request to the Eventbrite API to search for events that match
+        response = requests.get(url,payload)
+        print(response)
         #   the form data.
         # - (Make sure to save the JSON data from the response to the data
         #   variable so that it can display on the page as well.)
 
-        data = {'This': ['Some', 'mock', 'JSON']}
+        data = response.json()
         events = []
 
         return render_template("afterparties.html",
@@ -84,6 +96,8 @@ def create_eventbrite_event():
     # - Make a request to the Eventbrite API to create a new event using the
     # form data and save the result in a variable called `json`.
     # - Flash add the created event's URL as a link to the success flash message
+
+    
 
     ##### UNCOMMENT THIS once you make your request! #####
     # if response.ok:
