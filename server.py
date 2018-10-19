@@ -11,6 +11,7 @@ app.secret_key = "SECRETSECRETSECRET"
 eventbrite_token = os.environ["EVENTBRITE_TOKEN"]  # os saves the token from the secrets.sh to a dictionary
                                                    # called os.environ.
                                                    # Run the source secrets.sh in the terminal before using.
+eventbrite_id = os.environ["EVENTBRITE_ID"]
 
 @app.route("/")
 def homepage():
@@ -91,23 +92,43 @@ def create_eventbrite_event():
     timezone = request.form.get('timezone')
     currency = request.form.get('currency')
 
+    print(start_time)
+    print(end_time)
+    print(timezone)
+
     # TODO: Create my event!
 
     # - Make a request to the Eventbrite API to create a new event using the
     # form data and save the result in a variable called `json`.
     # - Flash add the created event's URL as a link to the success flash message
 
-    
+    url = "https://www.eventbriteapi.com/v3/organizations/{}/events/".format(eventbrite_id)
 
-    ##### UNCOMMENT THIS once you make your request! #####
-    # if response.ok:
-    #     flash("Your event was created!")
-    #     return redirect("/")
-    # else:
-    #     flash('OAuth failed: {}'.format(data['error_description']))
-    #     return redirect("/create-event")
+    payload = {
+        #"token": eventbrite_token,
+        "event.name.html":      name,
+        "event.start.utc":      start_time,
+        "event.start.timezone": timezone,
+        "event.end.utc":        end_time,
+        "event.end.timezone": timezone,
+        "event.currency":     currency
+    }
 
-    return redirect("/")
+    headers = {'Authorization': 'Bearer ' + eventbrite_token}
+    response = requests.post(url, data=payload, headers=headers)
+    print(response.ok)
+
+    data = response.json()
+
+    #### UNCOMMENT THIS once you make your request! #####
+    if response.ok:
+        flash("Your event was created!")
+        return redirect("/")
+    else:
+        flash('OAuth failed: {}'.format(data['error_description']))
+        return redirect("/create-event")
+
+    #return redirect("/")
 
 
 ############ Further Study ############
